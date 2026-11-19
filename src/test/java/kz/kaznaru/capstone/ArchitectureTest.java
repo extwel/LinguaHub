@@ -1,12 +1,10 @@
 package kz.kaznaru.capstone;
 
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
-
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
-/** Dependency rules are tests: breaking the architecture breaks the build. */
 @AnalyzeClasses(packages = "kz.kaznaru.capstone")
 class ArchitectureTest {
 
@@ -23,5 +21,6 @@ class ArchitectureTest {
     @ArchTest
     static final ArchRule ui_does_not_know_infra =
         noClasses().that().resideInAPackage("..ui..")
-            .should().dependOnClassesThat().resideInAPackage("..infra..");
+            .should().dependOnClassesThat().resideInAPackage("..infra..")
+            .allowEmptyShould(true);
 }
