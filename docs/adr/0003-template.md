@@ -1,6 +1,6 @@
 # ADR-0003: Layered Architecture for LinguaHub
 
-- Status: accepted by ADR-0002
+- Status: accepted by ADR-0003
 - Date: 2026-11-17
 - Deciders: <LinguaHub Development Team>
 
