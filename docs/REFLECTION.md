@@ -1,5 +1,10 @@
 # Individual reflection (one file per student: docs/reflection-<github-handle>.md)
 
-1. Which pattern did you implement, and what would the code look like without it? (TODO)
-2. Where did you over-engineer first, and how did you notice? (TODO)
-3. Which pattern would you remove if you started over? Why? (TODO)
+1. Which pattern did you implement, and what would the code look like without it?
+extwel: В проекте LinguaHub я реализовал паттерн Factory Method (Фабричный метод). Он позволяет создавать разные типы курсов, например языковые курсы и курсы подготовки к экзаменам, не привязываясь напрямую к конкретным классам. Без этого паттерна создание курсов происходило бы непосредственно в коде с использованием условий и операторов new, что усложнило бы добавление новых типов курсов и поддержку проекта.
+
+2. Where did you over-engineer first, and how did you notice?
+Aniyar1: Избыточное проектирование появилось, когда мы начали добавлять слишком много архитектурных компонентов и функций, которые не были необходимы на начальном этапе проекта. Мы старались упростить структуру, разделив приложение на слои Domain, Service, Infrastructure и UI, использовали интерфейсы там, где это действительно было полезно, и избегали ненужной сложности.
+ 
+4. Which pattern would you remove if you started over? Why?
+extwel & Aniyar1: Если бы мы начинали проект заново, мы бы в первую очередь пересмотрели необходимость использования паттерна Facade. Он упрощает взаимодействие между несколькими сервисами, однако на текущем этапе проекта его использование может быть избыточным. Мы бы добавлял его только тогда, когда логика взаимодействия сервисов стала бы достаточно сложной и действительно требовала отдельного фасада.
