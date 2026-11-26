@@ -3,6 +3,7 @@ package kz.kaznaru.capstone.service;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Locale;
 
 import kz.kaznaru.capstone.domain.Cart;
@@ -20,6 +21,10 @@ public class CartService {
             new HashMap<>();
 
     private GiftCertificate appliedCertificate;
+
+    // US-08: Купленные курсы
+    private final List<Course> purchasedCourses =
+            new ArrayList<>();
 
     public CartService(Cart cart) {
         if (cart == null) {
@@ -47,6 +52,12 @@ public class CartService {
     }
 
     public boolean addCourse(Course course) {
+
+        if (course != null && isPurchased(course.getId())) {
+            throw new IllegalArgumentException(
+                    "Вы уже купили этот курс");
+        }
+
         return cart.addCourse(course);
     }
 
@@ -92,7 +103,7 @@ public class CartService {
                 cart.getTotalPrice() - getDiscountAmount());
     }
 
-    // US-06: Применение подарочного сертификата
+    // US-06
     public void applyGiftCertificate(String code) {
 
         if (code == null || code.isBlank()) {
@@ -132,7 +143,6 @@ public class CartService {
         appliedCertificate = certificate;
     }
 
-    // US-06: Сумма сертификата
     public double getGiftCertificateAmount() {
         if (appliedCertificate == null) {
             return 0.0;
@@ -144,11 +154,74 @@ public class CartService {
         );
     }
 
-    // US-06: Итоговая стоимость
+    // US-07: Итоговая стоимость
     public double getFinalPrice() {
         return Math.max(0,
                 getDiscountedTotalPrice()
                 - getGiftCertificateAmount());
+    }
+
+    // US-08: Проверка купленного курса
+    public boolean isPurchased(long courseId) {
+        return purchasedCourses.stream()
+                .anyMatch(course -> course.getId() == courseId);
+    }
+
+    // US-08: Список купленных курсов
+    public List<Course> getPurchasedCourses() {
+        return List.copyOf(purchasedCourses);
+    }
+
+    // US-08: Покупка курсов
+    public double purchaseCourses() {
+
+        if (cart.getCourses().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Нельзя купить курсы: корзина пуста");
+        }
+
+        for (Course course : cart.getCourses()) {
+
+            if (!course.isAvailable()) {
+                throw new IllegalArgumentException(
+                        "Курс недоступен для покупки");
+            }
+
+            if (isPurchased(course.getId())) {
+                throw new IllegalArgumentException(
+                        "Курс уже куплен");
+            }
+
+            if (!Double.isFinite(course.getPrice())
+                    || course.getPrice() < 0) {
+                throw new IllegalArgumentException(
+                        "Некорректная стоимость курса");
+            }
+        }
+
+        double finalPrice = getFinalPrice();
+
+        if (!Double.isFinite(finalPrice) || finalPrice < 0) {
+            throw new IllegalArgumentException(
+                    "Некорректная стоимость заказа");
+        }
+
+        List<Course> coursesToPurchase =
+                new ArrayList<>(cart.getCourses());
+
+        // Регистрация на курсах
+        purchasedCourses.addAll(coursesToPurchase);
+
+        // Очистка корзины
+        for (Course course : coursesToPurchase) {
+            cart.removeCourse(course.getId());
+        }
+
+        // Сброс скидки и применённого сертификата
+        discount = null;
+        appliedCertificate = null;
+
+        return finalPrice;
     }
 
     public List<Course> getCourses() {

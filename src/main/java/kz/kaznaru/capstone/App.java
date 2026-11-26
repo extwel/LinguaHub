@@ -1,4 +1,3 @@
-
 package kz.kaznaru.capstone;
 
 import java.text.NumberFormat;
@@ -100,6 +99,7 @@ public class App {
             System.out.println("5. Отменить скидку");
             System.out.println("6. Применить подарочный сертификат");
             System.out.println("7. Оформить покупку");
+            System.out.println("8. Мои курсы");
             System.out.println("0. Завершить работу");
             System.out.println("=============================");
             System.out.print("Выберите действие: ");
@@ -108,7 +108,7 @@ public class App {
 
             switch (choice) {
 
-                // US-03: Добавление курса
+                // US-03
                 case "1":
                     try {
                         System.out.print("Введите ID курса: ");
@@ -123,30 +123,25 @@ public class App {
 
                         if (added) {
                             System.out.println(
-                                    "Курс успешно добавлен в корзину!"
-                            );
+                                    "Курс успешно добавлен в корзину!");
                         } else {
                             System.out.println(
-                                    "Этот курс уже находится в корзине."
-                            );
+                                    "Этот курс уже находится в корзине.");
                         }
 
                     } catch (NumberFormatException e) {
                         System.out.println(
-                                "Ошибка: введите корректный ID."
-                        );
+                                "Ошибка: введите корректный ID.");
                     } catch (IllegalArgumentException e) {
                         System.out.println(
-                                "Ошибка: " + e.getMessage()
-                        );
+                                "Ошибка: " + e.getMessage());
                     }
                     break;
 
                 // Просмотр корзины
                 case "2":
                     System.out.println(
-                            "\n======= Ваша корзина ======="
-                    );
+                            "\n======= Ваша корзина =======");
 
                     if (cartService.getCourses().isEmpty()) {
                         System.out.println("Корзина пока пуста.");
@@ -185,12 +180,11 @@ public class App {
                     }
                     break;
 
-                // US-04: Удаление курса
+                // US-04
                 case "3":
                     try {
                         System.out.print(
-                                "Введите ID курса для удаления: "
-                        );
+                                "Введите ID курса для удаления: ");
 
                         long courseId =
                                 Long.parseLong(scanner.nextLine());
@@ -200,8 +194,7 @@ public class App {
 
                         if (removed) {
                             System.out.println(
-                                    "Курс успешно удалён из корзины!"
-                            );
+                                    "Курс успешно удалён из корзины!");
 
                             System.out.println(
                                     "Итого: "
@@ -209,24 +202,21 @@ public class App {
                             );
                         } else {
                             System.out.println(
-                                    "Такого курса нет в корзине."
-                            );
+                                    "Такого курса нет в корзине.");
                         }
 
                     } catch (NumberFormatException e) {
                         System.out.println(
-                                "Ошибка: введите корректный ID."
-                        );
+                                "Ошибка: введите корректный ID.");
                     }
                     break;
 
-                // US-05: Применение скидки
+                // US-05
                 case "4":
                     try {
                         if (cartService.getCourses().isEmpty()) {
                             System.out.println(
-                                    "Сначала добавьте курс в корзину."
-                            );
+                                    "Сначала добавьте курс в корзину.");
                             break;
                         }
 
@@ -246,13 +236,11 @@ public class App {
                         } else if (discountChoice.equals("2")) {
                             type = DiscountType.FIXED;
                             System.out.print(
-                                    "Введите сумму скидки в KZT: "
-                            );
+                                    "Введите сумму скидки в KZT: ");
 
                         } else {
                             System.out.println(
-                                    "Неизвестный тип скидки."
-                            );
+                                    "Неизвестный тип скидки.");
                             break;
                         }
 
@@ -264,8 +252,7 @@ public class App {
                         cartService.applyDiscount(discount);
 
                         System.out.println(
-                                "Скидка успешно применена!"
-                        );
+                                "Скидка успешно применена!");
 
                         System.out.println(
                                 "Размер скидки: "
@@ -279,17 +266,15 @@ public class App {
 
                     } catch (NumberFormatException e) {
                         System.out.println(
-                                "Ошибка: введите корректное число."
-                        );
+                                "Ошибка: введите корректное число.");
 
                     } catch (IllegalArgumentException e) {
                         System.out.println(
-                                "Ошибка: " + e.getMessage()
-                        );
+                                "Ошибка: " + e.getMessage());
                     }
                     break;
 
-                // US-05: Отмена скидки
+                // Отмена скидки
                 case "5":
                     cartService.removeDiscount();
 
@@ -301,20 +286,18 @@ public class App {
                     );
                     break;
 
-                // US-06: Подарочный сертификат
+                // US-06
                 case "6":
                     try {
                         System.out.print(
-                                "Введите код подарочного сертификата: "
-                        );
+                                "Введите код подарочного сертификата: ");
 
                         String code = scanner.nextLine();
 
                         cartService.applyGiftCertificate(code);
 
                         System.out.println(
-                                "Сертификат успешно применён!"
-                        );
+                                "Сертификат успешно применён!");
 
                         System.out.println(
                                 "Сумма сертификата: "
@@ -329,23 +312,21 @@ public class App {
 
                     } catch (IllegalArgumentException e) {
                         System.out.println(
-                                "Ошибка: " + e.getMessage()
-                        );
+                                "Ошибка: " + e.getMessage());
                     }
                     break;
 
-                // US-07: Оформление покупки
+                // US-07 и US-08
                 case "7":
+
                     if (cartService.getCourses().isEmpty()) {
                         System.out.println(
-                                "Корзина пуста. Добавьте курс перед покупкой."
-                        );
+                                "Корзина пуста. Добавьте курс перед покупкой.");
                         break;
                     }
 
                     System.out.println(
-                            "\n======= Подтверждение покупки ======="
-                    );
+                            "\n======= Подтверждение покупки =======");
 
                     System.out.println(
                             "Первоначальная стоимость: "
@@ -375,37 +356,83 @@ public class App {
                     System.out.println("------------------------------------");
 
                     System.out.print(
-                            "Подтвердить покупку? (1 — Да, 0 — Нет): "
-                    );
+                            "Подтвердить покупку? (1 - Да, 0 - Нет): ");
 
                     String confirmation = scanner.nextLine();
 
                     if (confirmation.equals("1")) {
-                        System.out.println(
-                                "Покупка успешно подтверждена!"
-                        );
 
-                        System.out.println(
-                                "Сумма покупки: " + formatPrice(finalPrice)
-                        );
+                        try {
+                            double paid =
+                                    cartService.purchaseCourses();
+
+                            System.out.println(
+                                    "Покупка успешно подтверждена!");
+
+                            System.out.println(
+                                    "Сумма покупки: " + formatPrice(paid));
+
+                            System.out.println(
+                                    "Вы успешно зарегистрированы на курсах!");
+
+                            System.out.println("Корзина очищена.");
+
+                        } catch (IllegalArgumentException e) {
+                            System.out.println(
+                                    "Ошибка: " + e.getMessage());
+                        }
 
                     } else {
                         System.out.println("Покупка отменена.");
                     }
+
+                    break;
+
+                // US-08: Мои курсы
+                case "8":
+
+                    System.out.println(
+                            "\n========== Мои курсы ==========");
+
+                    if (cartService.getPurchasedCourses().isEmpty()) {
+                        System.out.println(
+                                "У вас пока нет купленных курсов.");
+                    } else {
+
+                        for (Course course :
+                                cartService.getPurchasedCourses()) {
+
+                            System.out.println(
+                                    "ID: " + course.getId());
+
+                            System.out.println(
+                                    "Название: " + course.getTitle());
+
+                            System.out.println(
+                                    "Язык: " + course.getLanguage());
+
+                            System.out.println(
+                                    "Уровень: " + course.getLevel());
+
+                            System.out.println(
+                                    "Статус: Вы зарегистрированы");
+
+                            System.out.println("----------------------------");
+                        }
+                    }
+
                     break;
 
                 case "0":
                     running = false;
 
                     System.out.println(
-                            "Спасибо за использование LinguaHub!"
-                    );
+                            "Спасибо за использование LinguaHub!");
                     break;
 
                 default:
                     System.out.println(
-                            "Неизвестная команда. Попробуйте снова."
-                    );
+                            "Неизвестная команда. Попробуйте снова.");
             }
         }
 
