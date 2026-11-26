@@ -51,4 +51,27 @@ public class CourseCatalogConsole {
         System.out.println("Статус: " + (course.isAvailable() ? "Доступен для покупки" : "Покупка недоступна"));
         System.out.println("=================================");
     }
+
+    public void searchCourses(String language, String level) {
+        List<Course> courses = courseService.findCoursesByLanguageAndLevel(language, level);
+
+        System.out.println("\n======= Результаты поиска =======");
+
+        if (courses.isEmpty()) {
+            System.out.println("Курсы по заданным параметрам не найдены.");
+            return;
+        }
+
+        for (Course course : courses) {
+            System.out.println("\nID: " + course.getId());
+            System.out.println("Название: " + course.getTitle());
+            System.out.println("Язык: " + course.getLanguage());
+            System.out.println("Уровень: " + course.getLevel());
+            System.out.println("Цена: " + course.getPrice() + " ₸");
+            System.out.println("Длительность: " + course.getDurationHours() + " часов");
+            System.out.println("Статус: " + (course.isAvailable() ? "Доступен" : "Недоступен"));
+        }
+
+        System.out.println("\n================================");
+    }
 }

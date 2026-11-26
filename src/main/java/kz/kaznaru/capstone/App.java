@@ -1,5 +1,7 @@
 package kz.kaznaru.capstone;
 
+import java.util.Scanner;
+
 import kz.kaznaru.capstone.domain.CourseFactory;
 import kz.kaznaru.capstone.domain.ExamPrepCourseFactory;
 import kz.kaznaru.capstone.domain.LanguageCourseFactory;
@@ -64,6 +66,24 @@ public class App {
 
         CourseCatalogConsole catalogConsole = new CourseCatalogConsole(courseService);
 
+        // Выводим весь каталог курсов
         catalogConsole.displayCatalog();
+
+        // Создаем Scanner для ввода пользователя
+        Scanner scanner = new Scanner(System.in);
+
+        // Поиск курса
+        System.out.println("\n--- Поиск курса ---");
+
+        System.out.print("Введите язык курса: ");
+        String language = scanner.nextLine();
+
+        System.out.print("Введите уровень курса: ");
+        String level = scanner.nextLine();
+
+        // Выводим результаты поиска
+        catalogConsole.searchCourses(language, level);
+
+        scanner.close();
     }
 }

@@ -25,4 +25,21 @@ public class CourseService {
         return courseRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Курс с таким ID не найден"));
     }
+
+    // US-02: Search courses by language and level
+    public List<Course> findCoursesByLanguageAndLevel(
+            String language,
+            String level) {
+        if (language == null || language.isBlank()
+                || level == null || level.isBlank()) {
+            return List.of();
+        }
+
+        return courseRepository.findAll().stream()
+                .filter(course -> course.getLanguage()
+                        .equalsIgnoreCase(language.trim()))
+                .filter(course -> course.getLevel()
+                        .equalsIgnoreCase(level.trim()))
+                .toList();
+    }
 }
