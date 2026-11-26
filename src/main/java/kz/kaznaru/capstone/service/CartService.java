@@ -1,4 +1,3 @@
-
 package kz.kaznaru.capstone.service;
 
 import java.util.List;
@@ -20,6 +19,11 @@ public class CartService {
 
     public boolean addCourse(Course course) {
         return cart.addCourse(course);
+    }
+
+    // US-04: Удаление курса через сервис
+    public boolean removeCourse(long courseId) {
+        return cart.removeCourse(courseId);
     }
 
     public List<Course> getCourses() {
