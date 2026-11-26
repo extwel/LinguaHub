@@ -1,18 +1,23 @@
+
 package kz.kaznaru.capstone;
 
 import java.text.NumberFormat;
+import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
 import kz.kaznaru.capstone.domain.Cart;
 import kz.kaznaru.capstone.domain.Course;
 import kz.kaznaru.capstone.domain.CourseFactory;
+import kz.kaznaru.capstone.domain.CourseProgress;
 import kz.kaznaru.capstone.domain.Discount;
 import kz.kaznaru.capstone.domain.DiscountType;
 import kz.kaznaru.capstone.domain.ExamPrepCourseFactory;
 import kz.kaznaru.capstone.domain.LanguageCourseFactory;
+import kz.kaznaru.capstone.domain.Lesson;
 import kz.kaznaru.capstone.infra.InMemoryCourseRepository;
 import kz.kaznaru.capstone.service.CartService;
+import kz.kaznaru.capstone.service.CourseProgressService;
 import kz.kaznaru.capstone.service.CourseService;
 import kz.kaznaru.capstone.ui.CourseCatalogConsole;
 
@@ -73,6 +78,9 @@ public class App {
         Cart cart = new Cart();
         CartService cartService = new CartService(cart);
 
+        CourseProgressService progressService =
+                new CourseProgressService();
+
         Scanner scanner = new Scanner(System.in);
 
         catalogConsole.displayCatalog();
@@ -100,6 +108,7 @@ public class App {
             System.out.println("6. Применить подарочный сертификат");
             System.out.println("7. Оформить покупку");
             System.out.println("8. Мои курсы");
+            System.out.println("9. Отслеживать прогресс курса");
             System.out.println("0. Завершить работу");
             System.out.println("=============================");
             System.out.print("Выберите действие: ");
@@ -419,6 +428,139 @@ public class App {
 
                             System.out.println("----------------------------");
                         }
+                    }
+
+                    break;
+
+                // US-09: Отслеживание прогресса курса
+                case "9":
+
+                    List<Course> purchasedCourses =
+                            cartService.getPurchasedCourses();
+
+                    if (purchasedCourses.isEmpty()) {
+                        System.out.println(
+                                "Сначала приобретите курс.");
+                        break;
+                    }
+
+                    System.out.println(
+                            "\n======= Выберите курс =======");
+
+                    for (Course course : purchasedCourses) {
+                        System.out.println(
+                                course.getId() + ". "
+                                + course.getTitle());
+                    }
+
+                    System.out.print("Введите ID курса: ");
+
+                    try {
+                        long courseId =
+                                Long.parseLong(scanner.nextLine());
+
+                        Course selectedCourse = purchasedCourses.stream()
+                                .filter(course -> course.getId() == courseId)
+                                .findFirst()
+                                .orElseThrow(() ->
+                                        new IllegalArgumentException(
+                                                "Курс не найден среди ваших покупок."));
+
+                        CourseProgress progress =
+                                progressService.openCourse(selectedCourse);
+
+                        boolean courseMenu = true;
+
+                        while (courseMenu) {
+
+                            System.out.println(
+                                    "\n======= " + selectedCourse.getTitle()
+                                    + " =======");
+
+                            System.out.println(
+                                    "Завершено уроков: "
+                                    + progress.getCompletedCount());
+
+                            System.out.println(
+                                    "Осталось уроков: "
+                                    + progress.getRemainingCount());
+
+                            System.out.printf(
+                                    Locale.US,
+                                    "Прогресс курса: %.1f%%%n",
+                                    progress.getCompletionPercentage());
+
+                            System.out.println("\nСписок уроков:");
+
+                            for (Lesson lesson : progress.getLessons()) {
+
+                                boolean completed =
+                                        progress.getCompletedLessonIds()
+                                                .contains(lesson.getId());
+
+                                System.out.println(
+                                        lesson.getId() + ". "
+                                        + lesson.getTitle()
+                                        + (completed
+                                                ? " [Завершён]"
+                                                : " [Не завершён]")
+                                );
+                            }
+
+                            System.out.println("\n1. Отметить урок завершённым");
+                            System.out.println("0. Вернуться в главное меню");
+                            System.out.print("Выберите действие: ");
+
+                            String progressChoice = scanner.nextLine();
+
+                            if (progressChoice.equals("1")) {
+
+                                System.out.print("Введите ID урока: ");
+
+                                try {
+                                    long lessonId =
+                                            Long.parseLong(scanner.nextLine());
+
+                                    boolean completed =
+                                            progressService.completeLesson(
+                                                    courseId, lessonId);
+
+                                    if (completed) {
+                                        System.out.println(
+                                                "Урок успешно завершён!");
+                                    } else {
+                                        System.out.println(
+                                                "Этот урок уже завершён.");
+                                    }
+
+                                    if (progress.getCompletionPercentage()
+                                            == 100.0) {
+                                        System.out.println(
+                                                "Поздравляем! Вы завершили курс!");
+                                    }
+
+                                } catch (NumberFormatException e) {
+                                    System.out.println(
+                                            "Ошибка: введите корректный ID урока.");
+                                } catch (IllegalArgumentException e) {
+                                    System.out.println(
+                                            "Ошибка: " + e.getMessage());
+                                }
+
+                            } else if (progressChoice.equals("0")) {
+                                courseMenu = false;
+                            } else {
+                                System.out.println(
+                                        "Неизвестная команда.");
+                            }
+                        }
+
+                    } catch (NumberFormatException e) {
+                        System.out.println(
+                                "Ошибка: введите корректный ID курса.");
+                    } catch (IllegalArgumentException e) {
+                        System.out.println(
+                                "Ошибка: " + e.getMessage());
                     }
 
                     break;
