@@ -20,6 +20,8 @@ import kz.kaznaru.capstone.service.CartService;
 import kz.kaznaru.capstone.service.CourseProgressService;
 import kz.kaznaru.capstone.service.CourseService;
 import kz.kaznaru.capstone.ui.CourseCatalogConsole;
+import kz.kaznaru.capstone.domain.CompletionCertificate;
+import kz.kaznaru.capstone.service.CertificateService;
 
 public class App {
 
@@ -81,6 +83,9 @@ public class App {
         CourseProgressService progressService =
                 new CourseProgressService();
 
+        CertificateService certificateService =
+        new CertificateService(cartService, progressService);
+
         Scanner scanner = new Scanner(System.in);
 
         catalogConsole.displayCatalog();
@@ -109,6 +114,7 @@ public class App {
             System.out.println("7. Оформить покупку");
             System.out.println("8. Мои курсы");
             System.out.println("9. Отслеживать прогресс курса");
+            System.out.println("10. Получить сертификат");
             System.out.println("0. Завершить работу");
             System.out.println("=============================");
             System.out.print("Выберите действие: ");
@@ -565,6 +571,53 @@ public class App {
 
                     break;
 
+                // US-10: Получение сертификата
+                case "10":
+
+                    List<Course> purchasedCoursesForCert =
+                            cartService.getPurchasedCourses();
+
+                    if (purchasedCoursesForCert.isEmpty()) {
+                        System.out.println(
+                                "Сначала приобретите курс.");
+                        break;
+                    }
+
+                    System.out.println(
+                            "\n======= Выберите курс для получения сертификата =======");
+
+                    for (Course course : purchasedCoursesForCert) {
+                        System.out.println(
+                                course.getId() + ". "
+                                + course.getTitle());
+                    }
+
+                    System.out.print("Введите ID курса: ");
+
+                    try {
+                        long courseId =
+                                Long.parseLong(scanner.nextLine());
+
+                        CompletionCertificate certificate =
+                                certificateService.issueCertificate(
+                                        courseId, "Student Name");
+
+                        System.out.println(
+                                "Поздравляем! Вы получили сертификат о завершении курса.");
+                        System.out.println("Имя студента: "
+                                + certificate.getStudentName());
+                        System.out.println("Название курса: "
+                                + certificate.getCourseName());
+
+                    } catch (NumberFormatException e) {
+                        System.out.println(
+                                "Ошибка: введите корректный ID курса.");
+                    } catch (IllegalArgumentException e) {
+                        System.out.println(
+                                "Ошибка: " + e.getMessage());
+                    }
+
+                    break;
                 case "0":
                     running = false;
 
