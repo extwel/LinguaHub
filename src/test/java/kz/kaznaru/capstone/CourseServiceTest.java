@@ -25,13 +25,11 @@ class CourseServiceTest {
 
         repository.save(factory.createCourse(
                 1, "English A1", "English", "A1",
-                25000, 40, "Курс английского для начинающих", true
-        ));
+                25000, 40, "Курс английского для начинающих", true));
 
         repository.save(factory.createCourse(
                 2, "English B2", "English", "B2",
-                45000, 60, "Продвинутый курс английского", false
-        ));
+                45000, 60, "Продвинутый курс английского", false));
     }
 
     @Test
@@ -56,7 +54,36 @@ class CourseServiceTest {
     void throwsExceptionWhenCourseNotFound() {
         assertThrows(
                 IllegalArgumentException.class,
-                () -> courseService.getCourseById(999)
-        );
+                () -> courseService.getCourseById(999));
+    }
+
+    @Test
+    void findsCoursesByLanguageAndLevel() {
+        var courses = courseService.findCoursesByLanguageAndLevel("English", "A1");
+
+        assertEquals(1, courses.size());
+        assertEquals("English A1", courses.get(0).getTitle());
+    }
+
+    @Test
+    void searchIsCaseInsensitive() {
+        var courses = courseService.findCoursesByLanguageAndLevel("english", "a1");
+
+        assertEquals(1, courses.size());
+        assertEquals("English A1", courses.get(0).getTitle());
+    }
+
+    @Test
+    void returnsEmptyListWhenNoCoursesMatch() {
+        var courses = courseService.findCoursesByLanguageAndLevel("German", "Beginner");
+
+        assertEquals(0, courses.size());
+    }
+
+    @Test
+    void returnsEmptyListWhenSearchParametersAreInvalid() {
+        var courses = courseService.findCoursesByLanguageAndLevel("", null);
+
+        assertEquals(0, courses.size());
     }
 }
