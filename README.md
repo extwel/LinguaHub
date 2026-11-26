@@ -138,3 +138,48 @@ classDiagram
 
 Branch per issue, pull request per branch,
 one teammate review before merge.
+
+## M2-02 — Service Layer
+
+Основной сценарий приложения LinguaHub — покупка
+курсов пользователем.
+
+Бизнес-логика реализована в классе CartService.
+Консольный интерфейс App вызывает методы сервиса.
+
+### Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant App
+    participant CartService
+    participant Cart
+
+    User->>App: Подтвердить покупку
+    App->>CartService: purchaseCourses()
+    CartService->>Cart: getCourses()
+    Cart-->>CartService: Список курсов
+    CartService->>CartService: Проверка заказа
+
+    alt Заказ корректен
+        CartService->>CartService: getFinalPrice()
+        CartService->>CartService: Регистрация на курсах
+        CartService->>Cart: removeCourse()
+        CartService-->>App: Итоговая стоимость
+        App-->>User: Покупка успешна
+    else Заказ некорректен
+        CartService-->>App: IllegalArgumentException
+        App-->>User: Сообщение об ошибке
+    end
+```
+
+### Responsibilities
+
+- App — взаимодействие с пользователем.
+- CartService — бизнес-логика покупки.
+- Cart — хранение выбранных курсов.
+- CourseRepository — доступ к каталогу курсов.
+
+Основной сценарий проверяется тестами PurchaseTest
+и AppTest.
