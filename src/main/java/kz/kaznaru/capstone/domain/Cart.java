@@ -1,4 +1,3 @@
-
 package kz.kaznaru.capstone.domain;
 
 import java.util.ArrayList;
@@ -27,6 +26,11 @@ public class Cart {
 
         courses.add(course);
         return true;
+    }
+
+    // US-04: Удаление курса из корзины
+    public boolean removeCourse(long courseId) {
+        return courses.removeIf(course -> course.getId() == courseId);
     }
 
     public List<Course> getCourses() {

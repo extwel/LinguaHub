@@ -1,4 +1,3 @@
-
 package kz.kaznaru.capstone;
 
 import java.text.NumberFormat;
@@ -83,6 +82,7 @@ public class App {
             System.out.println("\n========== Корзина ==========");
             System.out.println("1. Добавить курс в корзину");
             System.out.println("2. Посмотреть корзину");
+            System.out.println("3. Удалить курс из корзины");
             System.out.println("0. Завершить работу");
             System.out.println("=============================");
             System.out.print("Выберите действие: ");
@@ -91,6 +91,7 @@ public class App {
 
             switch (choice) {
 
+                // US-03: Добавление курса
                 case "1":
                     try {
                         System.out.print("Введите ID курса: ");
@@ -119,6 +120,7 @@ public class App {
                     }
                     break;
 
+                // Просмотр корзины
                 case "2":
                     System.out.println("\n======= Ваша корзина =======");
 
@@ -138,6 +140,36 @@ public class App {
                         System.out.println(
                                 "Итого: "
                                 + formatPrice(cartService.getTotalPrice())
+                        );
+                    }
+                    break;
+
+                // US-04: Удаление курса
+                case "3":
+                    try {
+                        System.out.print("Введите ID курса для удаления: ");
+                        long courseId = Long.parseLong(scanner.nextLine());
+
+                        boolean removed = cartService.removeCourse(courseId);
+
+                        if (removed) {
+                            System.out.println(
+                                    "Курс успешно удалён из корзины!"
+                            );
+
+                            System.out.println(
+                                    "Итого: "
+                                    + formatPrice(cartService.getTotalPrice())
+                            );
+                        } else {
+                            System.out.println(
+                                    "Такого курса нет в корзине."
+                            );
+                        }
+
+                    } catch (NumberFormatException e) {
+                        System.out.println(
+                                "Ошибка: введите корректный ID."
                         );
                     }
                     break;

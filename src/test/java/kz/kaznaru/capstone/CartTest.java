@@ -1,4 +1,3 @@
-
 package kz.kaznaru.capstone;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -76,5 +75,66 @@ class CartTest {
         );
 
         assertEquals(0, cart.getCourses().size());
+    }
+
+    // US-04: Проверка удаления курса
+    @Test
+    void shouldRemoveCourseFromCart() {
+        Cart cart = new Cart();
+
+        Course course = new LanguageCourse(
+                1, "English A1", "English", "A1",
+                25000, 40, "Beginner English course", true
+        );
+
+        cart.addCourse(course);
+
+        assertTrue(cart.removeCourse(1));
+        assertTrue(cart.getCourses().isEmpty());
+        assertEquals(0.0, cart.getTotalPrice());
+    }
+
+    // US-04: Удаление несуществующего курса
+    @Test
+    void shouldNotRemoveNonExistingCourse() {
+        Cart cart = new Cart();
+
+        Course course = new LanguageCourse(
+                1, "English A1", "English", "A1",
+                25000, 40, "Beginner English course", true
+        );
+
+        cart.addCourse(course);
+
+        assertFalse(cart.removeCourse(99));
+        assertEquals(1, cart.getCourses().size());
+        assertEquals(25000.0, cart.getTotalPrice());
+    }
+
+    // US-04: Пересчёт стоимости после удаления
+    @Test
+    void shouldRecalculateTotalPriceAfterRemoval() {
+        Cart cart = new Cart();
+
+        Course firstCourse = new LanguageCourse(
+                1, "English A1", "English", "A1",
+                25000, 40, "Beginner English course", true
+        );
+
+        Course secondCourse = new LanguageCourse(
+                2, "English B2", "English", "B2",
+                45000, 60, "Intermediate English course", true
+        );
+
+        cart.addCourse(firstCourse);
+        cart.addCourse(secondCourse);
+
+        assertEquals(70000.0, cart.getTotalPrice());
+
+        assertTrue(cart.removeCourse(1));
+
+        assertEquals(45000.0, cart.getTotalPrice());
+        assertEquals(1, cart.getCourses().size());
+        assertEquals(2L, cart.getCourses().get(0).getId());
     }
 }
