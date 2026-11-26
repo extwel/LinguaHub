@@ -1,6 +1,9 @@
+
 package kz.kaznaru.capstone.ui;
 
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 
 import kz.kaznaru.capstone.domain.Course;
 import kz.kaznaru.capstone.service.CourseService;
@@ -9,8 +12,15 @@ public class CourseCatalogConsole {
 
     private final CourseService courseService;
 
+    private static final NumberFormat PRICE_FORMAT =
+            NumberFormat.getNumberInstance(Locale.US);
+
     public CourseCatalogConsole(CourseService courseService) {
         this.courseService = courseService;
+    }
+
+    private String formatPrice(double price) {
+        return PRICE_FORMAT.format(price) + " KZT";
     }
 
     public void displayCatalog() {
@@ -30,7 +40,7 @@ public class CourseCatalogConsole {
             System.out.println("Название: " + course.getTitle());
             System.out.println("Язык: " + course.getLanguage());
             System.out.println("Уровень: " + course.getLevel());
-            System.out.println("Цена: " + course.getPrice() + " ₸");
+            System.out.println("Цена: " + formatPrice(course.getPrice()));
             System.out.println("Длительность: " + course.getDurationHours() + " часов");
             System.out.println("Статус: " + (course.isAvailable() ? "Доступен" : "Недоступен"));
         }
@@ -45,7 +55,7 @@ public class CourseCatalogConsole {
         System.out.println("Название: " + course.getTitle());
         System.out.println("Язык: " + course.getLanguage());
         System.out.println("Уровень: " + course.getLevel());
-        System.out.println("Цена: " + course.getPrice() + " ₸");
+        System.out.println("Цена: " + formatPrice(course.getPrice()));
         System.out.println("Длительность: " + course.getDurationHours() + " часов");
         System.out.println("Описание: " + course.getDescription());
         System.out.println("Статус: " + (course.isAvailable() ? "Доступен для покупки" : "Покупка недоступна"));
@@ -67,7 +77,7 @@ public class CourseCatalogConsole {
             System.out.println("Название: " + course.getTitle());
             System.out.println("Язык: " + course.getLanguage());
             System.out.println("Уровень: " + course.getLevel());
-            System.out.println("Цена: " + course.getPrice() + " ₸");
+            System.out.println("Цена: " + formatPrice(course.getPrice()));
             System.out.println("Длительность: " + course.getDurationHours() + " часов");
             System.out.println("Статус: " + (course.isAvailable() ? "Доступен" : "Недоступен"));
         }
