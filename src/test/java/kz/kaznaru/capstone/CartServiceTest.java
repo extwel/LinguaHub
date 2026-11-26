@@ -1,3 +1,4 @@
+
 package kz.kaznaru.capstone;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -8,6 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import kz.kaznaru.capstone.domain.Cart;
 import kz.kaznaru.capstone.domain.Course;
+import kz.kaznaru.capstone.domain.Discount;
+import kz.kaznaru.capstone.domain.DiscountType;
 import kz.kaznaru.capstone.domain.LanguageCourse;
 import kz.kaznaru.capstone.service.CartService;
 
@@ -77,5 +80,67 @@ class CartServiceTest {
         CartService cartService = new CartService(new Cart());
 
         assertFalse(cartService.removeCourse(99));
+    }
+
+    // US-07: Проверка итоговой стоимости со скидкой
+    @Test
+    void shouldCalculateFinalPriceWithDiscount() {
+        CartService cartService = new CartService(new Cart());
+
+        Course course = new LanguageCourse(
+                1, "English A1", "English", "A1",
+                25000, 40, "Beginner English course", true
+        );
+
+        cartService.addCourse(course);
+
+        cartService.applyDiscount(
+                new Discount(DiscountType.PERCENTAGE, 10)
+        );
+
+        assertEquals(25000.0, cartService.getTotalPrice());
+        assertEquals(2500.0, cartService.getDiscountAmount());
+        assertEquals(22500.0, cartService.getFinalPrice());
+    }
+
+    // US-07: Проверка скидки и подарочного сертификата одновременно
+    @Test
+    void shouldCalculateFinalPriceWithDiscountAndGiftCertificate() {
+        CartService cartService = new CartService(new Cart());
+
+        Course course = new LanguageCourse(
+                1, "English A1", "English", "A1",
+                25000, 40, "Beginner English course", true
+        );
+
+        cartService.addCourse(course);
+
+        cartService.applyDiscount(
+                new Discount(DiscountType.PERCENTAGE, 10)
+        );
+
+        cartService.applyGiftCertificate("GIFT5000");
+
+        assertEquals(25000.0, cartService.getTotalPrice());
+        assertEquals(2500.0, cartService.getDiscountAmount());
+        assertEquals(5000.0, cartService.getGiftCertificateAmount());
+        assertEquals(17500.0, cartService.getFinalPrice());
+    }
+
+    // US-07: Итоговая стоимость не может быть отрицательной
+    @Test
+    void shouldNotAllowNegativeFinalPrice() {
+        CartService cartService = new CartService(new Cart());
+
+        Course course = new LanguageCourse(
+                1, "English A1", "English", "A1",
+                25000, 40, "Beginner English course", true
+        );
+
+        cartService.addCourse(course);
+        cartService.applyGiftCertificate("GIFT50000");
+
+        assertEquals(25000.0, cartService.getGiftCertificateAmount());
+        assertEquals(0.0, cartService.getFinalPrice());
     }
 }
