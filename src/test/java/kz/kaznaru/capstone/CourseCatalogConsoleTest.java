@@ -1,3 +1,4 @@
+
 package kz.kaznaru.capstone;
 
 import java.io.ByteArrayOutputStream;
@@ -41,7 +42,7 @@ class CourseCatalogConsoleTest {
         assertTrue(result.contains("Каталог курсов"));
         assertTrue(result.contains("English A1"));
         assertTrue(result.contains("English"));
-        assertTrue(result.contains("25000.0"));
+        assertTrue(result.contains("25,000 KZT"));
         assertTrue(result.contains("Доступен"));
     }
 
@@ -92,6 +93,7 @@ class CourseCatalogConsoleTest {
         assertTrue(result.contains("English A1"));
         assertTrue(result.contains("Начальный курс английского"));
         assertTrue(result.contains("Доступен для покупки"));
+        assertTrue(result.contains("25,000 KZT"));
     }
 
     @Test
@@ -149,7 +151,7 @@ class CourseCatalogConsoleTest {
         assertTrue(result.contains("English A1"));
         assertTrue(result.contains("English"));
         assertTrue(result.contains("Beginner"));
-        assertTrue(result.contains("25000.0"));
+        assertTrue(result.contains("25,000 KZT"));
     }
 
     @Test
