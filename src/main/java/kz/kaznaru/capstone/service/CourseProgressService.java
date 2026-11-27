@@ -1,4 +1,3 @@
-
 package kz.kaznaru.capstone.service;
 
 import java.util.ArrayList;
@@ -9,8 +8,8 @@ import java.util.Map;
 import kz.kaznaru.capstone.domain.Course;
 import kz.kaznaru.capstone.domain.CourseAccess;
 import kz.kaznaru.capstone.domain.CourseProgress;
-import kz.kaznaru.capstone.domain.Lesson;
 import kz.kaznaru.capstone.domain.Enrollment;
+import kz.kaznaru.capstone.domain.Lesson;
 
 public class CourseProgressService implements CourseAccess {
 
@@ -74,12 +73,25 @@ public class CourseProgressService implements CourseAccess {
     @Override
     public boolean completeLesson(long courseId, long lessonId) {
 
+        Enrollment enrollment = enrollments.get(courseId);
+
+        if (enrollment == null) {
+            throw new IllegalStateException(
+                    "Сначала необходимо открыть курс");
+        }
+
+        if (!enrollment.canContinueLearning()) {
+            throw new IllegalStateException(
+                    "Обучение недоступно в текущем состоянии: "
+                            + enrollment.getStatus());
+        }
+
         CourseProgress progress = getProgress(courseId);
 
         boolean completed = progress.completeLesson(lessonId);
 
         if (completed && progress.getRemainingCount() == 0) {
-            enrollments.get(courseId).complete();
+            enrollment.complete();
         }
 
         return completed;
