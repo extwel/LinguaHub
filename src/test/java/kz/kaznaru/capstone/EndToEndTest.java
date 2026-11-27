@@ -4,6 +4,7 @@ package kz.kaznaru.capstone;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 
 import kz.kaznaru.capstone.domain.Cart;
@@ -14,10 +15,11 @@ import kz.kaznaru.capstone.domain.CourseProgress;
 import kz.kaznaru.capstone.domain.Discount;
 import kz.kaznaru.capstone.domain.DiscountType;
 import kz.kaznaru.capstone.domain.LanguageCourse;
+
 import kz.kaznaru.capstone.infra.InMemoryCourseRepository;
+
 import kz.kaznaru.capstone.service.CartService;
 import kz.kaznaru.capstone.service.CertificateService;
-import kz.kaznaru.capstone.service.CheckoutFacade;
 import kz.kaznaru.capstone.service.CourseProgressService;
 import kz.kaznaru.capstone.service.CourseService;
 
@@ -71,11 +73,8 @@ class EndToEndTest {
 
         cartService.applyGiftCertificate("GIFT5000");
 
-        CheckoutFacade checkoutFacade =
-                new CheckoutFacade(cartService);
-
         CheckoutSummary summary =
-                checkoutFacade.prepareCheckout();
+                cartService.prepareCheckout();
 
         assertEquals(25000.0, summary.totalPrice());
         assertEquals(2500.0, summary.discountAmount());
@@ -83,7 +82,7 @@ class EndToEndTest {
         assertEquals(17500.0, summary.finalPrice());
 
         // 5. Подтверждаем покупку
-        double paidAmount = checkoutFacade.checkout();
+        double paidAmount = cartService.purchaseCourses();
 
         assertEquals(17500.0, paidAmount);
         assertTrue(cartService.isPurchased(1));
@@ -91,6 +90,7 @@ class EndToEndTest {
 
         // 6. Проверяем My Courses
         assertEquals(1, cartService.getPurchasedCourses().size());
+
         assertEquals(
                 "English A1",
                 cartService.getPurchasedCourses().get(0).getTitle()
@@ -112,13 +112,16 @@ class EndToEndTest {
         CourseProgress progress =
                 progressService.openCourse(course);
 
-        assertEquals("ACTIVE",
-                progressService.getEnrollmentStatus(1));
+        assertEquals(
+                "ACTIVE",
+                progressService.getEnrollmentStatus(1)
+        );
 
         assertEquals(5, progress.getLessons().size());
 
         // 9. Завершаем все пять уроков
         for (int lessonId = 1; lessonId <= 5; lessonId++) {
+
             assertTrue(
                     progressService.completeLesson(1, lessonId)
             );
