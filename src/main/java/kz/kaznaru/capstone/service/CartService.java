@@ -93,7 +93,16 @@ public class CartService {
     }
 
     public boolean removeCourse(long courseId) {
-        return cart.removeCourse(courseId);
+
+        boolean removed = cart.removeCourse(courseId);
+
+        // FIX-01: если корзина опустела,
+        // отменяем применение сертификата без списания
+        if (removed && cart.getCourses().isEmpty()) {
+            appliedCertificate = null;
+        }
+
+        return removed;
     }
 
     public void applyDiscount(Discount discount) {
@@ -175,7 +184,8 @@ public class CartService {
                     "Заказ уже не требует оплаты");
         }
 
-        certificate.use();
+        // FIX-01: применяем сертификат без списания.
+        // Списание выполняется только в purchaseCourses().
         appliedCertificate = certificate;
     }
 
@@ -261,12 +271,25 @@ public class CartService {
                     "Некорректная стоимость заказа");
         }
 
+        double certificateAmount =
+                getGiftCertificateAmount();
+
         // M3-01: оплата через Adapter
         if (finalPrice > 0
                 && !paymentProcessor.pay(finalPrice)) {
 
             throw new IllegalArgumentException(
                     "Оплата отклонена. Покупка не выполнена");
+        }
+
+        // FIX-01: списываем сертификат только
+        // после успешной оплаты заказа.
+        // Если сертификат не уменьшил стоимость,
+        // он остаётся неиспользованным.
+        if (appliedCertificate != null
+                && certificateAmount > 0) {
+
+            appliedCertificate.use();
         }
 
         List<Course> coursesToPurchase =
