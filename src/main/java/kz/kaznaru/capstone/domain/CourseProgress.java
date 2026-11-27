@@ -3,9 +3,10 @@ package kz.kaznaru.capstone.domain;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
-public class CourseProgress {
+public class CourseProgress implements Iterable<Lesson> {
 
     private final long courseId;
     private final List<Lesson> lessons;
@@ -30,6 +31,11 @@ public class CourseProgress {
 
     public List<Lesson> getLessons() {
         return Collections.unmodifiableList(lessons);
+    }
+
+    @Override
+    public Iterator<Lesson> iterator() {
+        return new LessonIterator(lessons);
     }
 
     public List<Long> getCompletedLessonIds() {

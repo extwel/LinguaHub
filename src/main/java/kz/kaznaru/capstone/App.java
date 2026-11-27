@@ -7,6 +7,8 @@ import java.util.Locale;
 import java.util.Scanner;
 
 import kz.kaznaru.capstone.domain.Cart;
+import kz.kaznaru.capstone.domain.CheckoutSummary;
+import kz.kaznaru.capstone.domain.CompletionCertificate;
 import kz.kaznaru.capstone.domain.Course;
 import kz.kaznaru.capstone.domain.CourseFactory;
 import kz.kaznaru.capstone.domain.CourseProgress;
@@ -15,16 +17,11 @@ import kz.kaznaru.capstone.domain.DiscountType;
 import kz.kaznaru.capstone.domain.ExamPrepCourseFactory;
 import kz.kaznaru.capstone.domain.LanguageCourseFactory;
 import kz.kaznaru.capstone.domain.Lesson;
-import kz.kaznaru.capstone.domain.CompletionCertificate;
-import kz.kaznaru.capstone.domain.CheckoutSummary;
-
 import kz.kaznaru.capstone.infra.InMemoryCourseRepository;
-
 import kz.kaznaru.capstone.service.CartService;
+import kz.kaznaru.capstone.service.CertificateService;
 import kz.kaznaru.capstone.service.CourseProgressService;
 import kz.kaznaru.capstone.service.CourseService;
-import kz.kaznaru.capstone.service.CertificateService;
-
 import kz.kaznaru.capstone.ui.CourseCatalogConsole;
 
 public class App {
@@ -559,7 +556,7 @@ public class App {
 
                             System.out.println("\nСписок уроков:");
 
-                            for (Lesson lesson : progress.getLessons()) {
+                            for (Lesson lesson : progress) {
 
                                 boolean completed =
                                         progress.getCompletedLessonIds()
