@@ -10,6 +10,7 @@ import kz.kaznaru.capstone.domain.Cart;
 import kz.kaznaru.capstone.domain.CheckoutSummary;
 import kz.kaznaru.capstone.domain.CompletionCertificate;
 import kz.kaznaru.capstone.domain.Course;
+import kz.kaznaru.capstone.domain.CourseAccess;
 import kz.kaznaru.capstone.domain.CourseFactory;
 import kz.kaznaru.capstone.domain.CourseProgress;
 import kz.kaznaru.capstone.domain.Discount;
@@ -20,6 +21,7 @@ import kz.kaznaru.capstone.domain.Lesson;
 import kz.kaznaru.capstone.infra.InMemoryCourseRepository;
 import kz.kaznaru.capstone.service.CartService;
 import kz.kaznaru.capstone.service.CertificateService;
+import kz.kaznaru.capstone.service.CourseAccessProxy;
 import kz.kaznaru.capstone.service.CourseProgressService;
 import kz.kaznaru.capstone.service.CourseService;
 import kz.kaznaru.capstone.ui.CourseCatalogConsole;
@@ -85,6 +87,11 @@ public class App {
 
         CourseProgressService progressService =
                 new CourseProgressService();
+
+        // M3-03: Proxy
+        CourseAccess courseAccess =
+                new CourseAccessProxy(
+                        cartService, progressService);
 
         CertificateService certificateService =
                 new CertificateService(cartService, progressService);
@@ -523,15 +530,12 @@ public class App {
                         long courseId =
                                 Long.parseLong(scanner.nextLine());
 
-                        Course selectedCourse = purchasedCourses.stream()
-                                .filter(course -> course.getId() == courseId)
-                                .findFirst()
-                                .orElseThrow(() ->
-                                        new IllegalArgumentException(
-                                                "Курс не найден среди ваших покупок."));
+                        Course selectedCourse =
+                                courseService.getCourseById(courseId);
 
+                        // M3-03: открытие курса через Proxy
                         CourseProgress progress =
-                                progressService.openCourse(selectedCourse);
+                                courseAccess.openCourse(selectedCourse);
 
                         boolean courseMenu = true;
 
@@ -556,6 +560,7 @@ public class App {
 
                             System.out.println("\nСписок уроков:");
 
+                            // M3-02: Iterator
                             for (Lesson lesson : progress) {
 
                                 boolean completed =
@@ -590,8 +595,9 @@ public class App {
                                     long lessonId =
                                             Long.parseLong(scanner.nextLine());
 
+                                    // M3-03: завершение урока через Proxy
                                     boolean completed =
-                                            progressService.completeLesson(
+                                            courseAccess.completeLesson(
                                                     courseId, lessonId);
 
                                     if (completed) {
