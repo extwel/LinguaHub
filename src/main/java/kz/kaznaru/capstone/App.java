@@ -74,6 +74,7 @@ public class App {
                 false
         ));
 
+        repository.save(new kz.kaznaru.capstone.domain.SpeakingCourseFactory().createCourse(5, "English Speaking B1", "English", "Intermediate", 35000, 50, "Курс разговорного английского языка.", true));
         CourseService courseService =
                 new CourseService(repository);
 
