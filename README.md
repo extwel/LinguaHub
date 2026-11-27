@@ -178,7 +178,10 @@ classDiagram
 
 #### 2. Cart and Checkout
 
-Strategy, Observer и Facade.
+Strategy и Observer.
+
+После Pattern Audit приложение взаимодействует
+с CartService напрямую.
 
 ```mermaid
 classDiagram
@@ -205,6 +208,7 @@ classDiagram
         +getDiscountAmount() double
         +getGiftCertificateAmount() double
         +getFinalPrice() double
+        +prepareCheckout() CheckoutSummary
         +purchaseCourses() double
         +getPurchasedCourses() List~Course~
         +isPurchased(long courseId) boolean
@@ -239,11 +243,6 @@ classDiagram
         +isUsed() boolean
     }
 
-    class CheckoutFacade {
-        +prepareCheckout() CheckoutSummary
-        +checkout() double
-    }
-
     class CheckoutSummary {
         -double totalPrice
         -double discountAmount
@@ -266,11 +265,9 @@ classDiagram
     class EnrollmentLogger
 
     App --> CartService
-    App --> CheckoutFacade
+    App ..> CheckoutSummary
 
-    CheckoutFacade --> CartService
-    CheckoutFacade ..> CheckoutSummary
-
+    CartService ..> CheckoutSummary : creates
     CartService --> Cart
     CartService --> Discount
     CartService --> GiftCertificate
@@ -412,7 +409,6 @@ stateDiagram-v2
 | Strategy | Behavioral | Различные алгоритмы скидок | DiscountStrategyTest |
 | Observer | Behavioral | Уведомления и журналирование регистрации | EnrollmentObserverTest |
 | State | Behavioral | Управление состояниями регистрации | EnrollmentStateTest |
-| Facade | Structural | Упрощение оформления покупки | CheckoutFacadeTest |
 
 ### Architecture pattern
 
@@ -428,15 +424,19 @@ InMemoryCourseRepository реализует этот интерфейс
 
 - Abstract Factory — отсутствует необходимость
   создавать семейства связанных объектов.
-- Builder — объекты курсов имеют простую структуру.
+- Builder — на момент проектирования отсутствовала
+  необходимость сложного создания объектов.
 - Mediator — отсутствует необходимость
   в отдельном посреднике между компонентами.
+- Facade — удалён после Pattern Audit,
+  поскольку создавал лишний уровень делегирования.
 
 Подробнее:
 
 - [Pattern Register](docs/PATTERN_REGISTER.md)
 - [ADR-0002: Pattern Selection](docs/adr/0002-pattern-selection.md)
 - [ADR-0003: Layered Architecture](docs/adr/0003-template.md)
+- [ADR-0004: Pattern Audit](docs/adr/0004-pattern-audit.md)
 
 ## M2-02 — Service Layer
 
@@ -445,8 +445,12 @@ InMemoryCourseRepository реализует этот интерфейс
 
 Бизнес-логика покупки реализована в CartService.
 
-CheckoutFacade предоставляет упрощённый интерфейс
-для подготовки и оформления покупки.
+Метод prepareCheckout() подготавливает информацию
+о стоимости заказа.
+
+Метод purchaseCourses() выполняет покупку.
+
+После Pattern Audit App вызывает эти методы напрямую.
 
 ### Sequence Diagram
 
@@ -454,7 +458,6 @@ CheckoutFacade предоставляет упрощённый интерфей�
 sequenceDiagram
     actor User
     participant App
-    participant CheckoutFacade
     participant CartService
     participant Cart
     participant Enrollment
@@ -462,81 +465,111 @@ sequenceDiagram
     participant Logger as EnrollmentLogger
 
     User->>App: Оформить покупку
-    App->>CheckoutFacade: prepareCheckout()
 
-    CheckoutFacade->>CartService: getCourses()
+    App->>CartService: getCourses()
     CartService->>Cart: getCourses()
     Cart-->>CartService: Список курсов
-    CartService-->>CheckoutFacade: Список курсов
+    CartService-->>App: Список курсов
 
-    CheckoutFacade->>CartService: getTotalPrice()
-    CartService-->>CheckoutFacade: Стоимость
+    alt Корзина пуста
+        App-->>User: Добавьте курс перед покупкой
+    else Корзина содержит курсы
 
-    CheckoutFacade->>CartService: getDiscountAmount()
-    CartService-->>CheckoutFacade: Размер скидки
-
-    CheckoutFacade->>CartService: getGiftCertificateAmount()
-    CartService-->>CheckoutFacade: Сумма сертификата
-
-    CheckoutFacade->>CartService: getFinalPrice()
-    CartService-->>CheckoutFacade: Итоговая стоимость
-
-    CheckoutFacade-->>App: CheckoutSummary
-    App-->>User: Информация о заказе
-
-    alt Пользователь подтверждает покупку
-        User->>App: Подтвердить
-        App->>CheckoutFacade: checkout()
-        CheckoutFacade->>CartService: purchaseCourses()
+        App->>CartService: prepareCheckout()
 
         CartService->>Cart: getCourses()
         Cart-->>CartService: Список курсов
 
-        CartService->>CartService: Проверка заказа
+        CartService->>CartService: getTotalPrice()
+        CartService->>CartService: getDiscountAmount()
+        CartService->>CartService: getGiftCertificateAmount()
+        CartService->>CartService: getFinalPrice()
 
-        alt Заказ корректен
-            CartService->>CartService: getFinalPrice()
-            CartService->>CartService: Сохранение приобретённых курсов
+        CartService-->>App: CheckoutSummary
+        App-->>User: Информация о заказе
 
-            loop Каждый приобретённый курс
-                CartService->>Cart: removeCourse()
+        alt Пользователь подтверждает покупку
+            User->>App: Подтвердить
+            App->>CartService: purchaseCourses()
+
+            CartService->>Cart: getCourses()
+            Cart-->>CartService: Список курсов
+
+            CartService->>CartService: Проверка заказа
+
+            alt Заказ корректен
+                CartService->>CartService: getFinalPrice()
+                CartService->>CartService: Сохранение приобретённых курсов
+
+                loop Каждый приобретённый курс
+                    CartService->>Cart: removeCourse()
+                end
+
+                CartService->>CartService: Сброс скидки и сертификата
+
+                loop Каждый приобретённый курс
+                    CartService->>Enrollment: notifyObservers(course)
+                    Enrollment->>Notification: update(course)
+                    Enrollment->>Logger: update(course)
+                end
+
+                CartService-->>App: Итоговая стоимость
+                App-->>User: Покупка успешна
+
+            else Заказ некорректен
+                CartService-->>App: IllegalArgumentException
+                App-->>User: Сообщение об ошибке
             end
 
-            CartService->>CartService: Сброс скидки и сертификата
-
-            loop Каждый приобретённый курс
-                CartService->>Enrollment: notifyObservers(course)
-                Enrollment->>Notification: update(course)
-                Enrollment->>Logger: update(course)
-            end
-
-            CartService-->>CheckoutFacade: Итоговая стоимость
-            CheckoutFacade-->>App: Результат покупки
-            App-->>User: Покупка успешна
-
-        else Заказ некорректен
-            CartService-->>CheckoutFacade: IllegalArgumentException
-            CheckoutFacade-->>App: IllegalArgumentException
-            App-->>User: Сообщение об ошибке
+        else Пользователь отменяет покупку
+            User->>App: Отмена
+            App-->>User: Покупка отменена
         end
-
-    else Пользователь отменяет покупку
-        User->>App: Отмена
-        App-->>User: Покупка отменена
     end
 ```
 
 ### Responsibilities
 
 - App — взаимодействие с пользователем.
-- CheckoutFacade — упрощение оформления покупки.
-- CartService — бизнес-логика покупки.
+- CartService — подготовка заказа и бизнес-логика покупки.
+- CheckoutSummary — информация о стоимости заказа.
 - Cart — хранение выбранных курсов.
 - DiscountStrategy — алгоритмы расчёта скидок.
 - Enrollment — уведомление наблюдателей.
 - CourseProgressService — управление прогрессом.
 - CertificateService — выдача сертификатов.
 - CourseRepository — доступ к каталогу курсов.
+
+## Pattern Audit
+
+В рамках Checkpoint: Pattern Audit обнаружены
+три code smells.
+
+| Code smell | Decision |
+|---|---|
+| Middle Man | Fixed |
+| Large Class | Deferred |
+| Repeated Conditional | Deferred |
+
+Паттерн Facade удалён согласно принципу YAGNI.
+
+App взаимодействует напрямую с CartService.
+
+Рефакторинг выполнен отдельным Pull Request #53.
+
+Результаты рефакторинга:
+
+- Удалён один класс.
+- Изменено пять файлов.
+- Код и тесты сокращены на 33 строки.
+- Maven clean verify: BUILD SUCCESS.
+- Все пороги JaCoCo выполнены.
+
+Документация:
+
+- [Pattern Audit](docs/audit.md)
+- [Audit ADR](docs/adr/0004-pattern-audit.md)
+- [Refactoring PR #53](https://github.com/extwel/LinguaHub/pull/53)
 
 ## Testing
 
@@ -564,10 +597,19 @@ mvn clean verify
 - DiscountStrategyTest
 - EnrollmentObserverTest
 - EnrollmentStateTest
-- CheckoutFacadeTest
 
 Основной сценарий покупки проверяется
-в PurchaseTest, AppTest и CheckoutFacadeTest.
+в PurchaseTest, AppTest и CartCheckoutTest.
+
+EndToEndTest проверяет полный сценарий
+от поиска курса до получения сертификата.
+
+## Releases
+
+- [v0.2 — M2](https://github.com/extwel/LinguaHub/releases/tag/v0.2)
+
+Версия v0.2 фиксирует состояние проекта
+до рефакторинга Pattern Audit.
 
 ## Team workflow
 

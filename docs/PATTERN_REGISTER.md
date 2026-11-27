@@ -1,21 +1,20 @@
-
+﻿
 # Pattern Register
 
 Проект: LinguaHub
 
 В таблице представлены паттерны проектирования,
-реализованные в проекте, их назначение, основные
-классы, тесты и рассмотренные альтернативы.
+реализованные в проекте, их категории, назначение,
+основные классы, тесты и рассмотренные альтернативы.
 
 ## Implemented patterns
 
-| # | Pattern | Lecture | Problem in this project (the smell it removes) | Key classes | Test | Alternative considered |
-|---|---|---|---|---|---|---|
-| 1 | Factory Method | practice 1 | Устраняет прямую зависимость приложения от конкретных классов при создании различных типов курсов. | Course, CourseFactory, LanguageCourseFactory, ExamPrepCourseFactory, LanguageCourse, ExamPrepCourse | [CourseFactoryTest](../src/test/java/kz/kaznaru/capstone/CourseFactoryTest.java) | Constructor / direct object creation |
-| 2 | Strategy | practice 4 | Разделяет алгоритмы расчёта процентных и фиксированных скидок, устраняя условные операторы внутри алгоритма расчёта. | Discount, DiscountStrategy, PercentageDiscount, FixedDiscount | [DiscountStrategyTest](../src/test/java/kz/kaznaru/capstone/DiscountStrategyTest.java) | if/else conditional logic |
-| 3 | Observer | practice 4 | Устраняет прямую зависимость процесса регистрации от механизмов уведомления и журналирования. | Enrollment, EnrollmentObserver, EnrollmentNotification, EnrollmentLogger, CartService | [EnrollmentObserverTest](../src/test/java/kz/kaznaru/capstone/EnrollmentObserverTest.java) | Direct method calls |
-| 4 | State | practice 5 | Устраняет разрозненные условные операторы при управлении состояниями регистрации и допустимыми переходами. | Enrollment, EnrollmentState, PendingState, ActiveState, CompletedState, CancelledState, CourseProgressService | [EnrollmentStateTest](../src/test/java/kz/kaznaru/capstone/EnrollmentStateTest.java) | Enum + if/else |
-| 5 | Facade | practice 3 | Упрощает оформление покупки, скрывая от пользовательского интерфейса отдельные операции расчёта стоимости и регистрации. | CheckoutFacade, CheckoutSummary, CartService, App | [CheckoutFacadeTest](../src/test/java/kz/kaznaru/capstone/CheckoutFacadeTest.java) | Direct calls to CartService methods |
+| # | Pattern | Category | Lecture | Problem in this project (the smell it removes) | Key classes | Test | Alternative considered |
+|---|---|---|---|---|---|---|---|
+| 1 | Factory Method | Creational | practice 1 | Устраняет прямую зависимость приложения от конкретных классов при создании различных типов курсов. | Course, CourseFactory, LanguageCourseFactory, ExamPrepCourseFactory, LanguageCourse, ExamPrepCourse | [CourseFactoryTest](../src/test/java/kz/kaznaru/capstone/CourseFactoryTest.java) | Constructor / direct object creation |
+| 2 | Strategy | Behavioral | practice 4 | Разделяет алгоритмы расчёта процентных и фиксированных скидок. | Discount, DiscountStrategy, PercentageDiscount, FixedDiscount | [DiscountStrategyTest](../src/test/java/kz/kaznaru/capstone/DiscountStrategyTest.java) | if/else conditional logic |
+| 3 | Observer | Behavioral | practice 4 | Устраняет прямую зависимость процесса регистрации от механизмов уведомления и журналирования. | Enrollment, EnrollmentObserver, EnrollmentNotification, EnrollmentLogger, CartService | [EnrollmentObserverTest](../src/test/java/kz/kaznaru/capstone/EnrollmentObserverTest.java) | Direct method calls |
+| 4 | State | Behavioral | practice 5 | Устраняет разрозненные условные операторы при управлении состояниями регистрации и допустимыми переходами. | Enrollment, EnrollmentState, PendingState, ActiveState, CompletedState, CancelledState, CourseProgressService | [EnrollmentStateTest](../src/test/java/kz/kaznaru/capstone/EnrollmentStateTest.java) | Enum + if/else |
 
 ## Pattern descriptions
 
@@ -45,8 +44,8 @@ DiscountStrategy определяет общий интерфейс
 PercentageDiscount рассчитывает процентную скидку.
 FixedDiscount рассчитывает фиксированную скидку.
 
-Преимущество: возможность добавления новых
-алгоритмов расчёта без изменения существующих стратегий.
+Преимущество: разделение алгоритмов расчёта
+и возможность добавления новых стратегий.
 
 ### 3. Observer
 
@@ -88,27 +87,6 @@ EnrollmentLogger сохраняет информацию о регистраци
 Преимущество: контроль допустимых переходов
 без большого количества условных операторов.
 
-### 5. Facade
-
-Категория: Structural.
-
-Используется при оформлении покупки курса.
-
-CheckoutFacade предоставляет упрощённый интерфейс
-для взаимодействия с CartService.
-
-Основные методы:
-
-- prepareCheckout() — подготовка информации о заказе.
-- checkout() — оформление покупки.
-
-CheckoutSummary содержит первоначальную стоимость,
-размер скидки, сумму подарочного сертификата
-и итоговую стоимость заказа.
-
-Преимущество: уменьшение сложности пользовательского
-интерфейса и сохранение бизнес-логики в сервисном слое.
-
 ## Architecture pattern
 
 ### Repository
@@ -126,11 +104,44 @@ Repository рассматривается отдельно от GoF-паттер
 
 ## Rejected patterns
 
-Следующие паттерны были рассмотрены,
-но не выбраны согласно принципу YAGNI.
+Следующие паттерны были отклонены при проектировании
+или удалены после проведения Pattern Audit
+согласно принципу YAGNI.
 
 | Pattern | Why rejected | ADR |
 |---|---|---|
 | Abstract Factory | Проект не требует создания семейств связанных объектов. Factory Method достаточно для создания существующих типов курсов. | [ADR-0002](adr/0002-pattern-selection.md) |
-| Builder | Объекты курсов имеют достаточно простую структуру и не требуют сложного многоступенчатого создания. | [ADR-0002](adr/0002-pattern-selection.md) |
+| Builder | На момент первоначального проектирования отсутствовала необходимость сложного многоступенчатого создания объектов. | [ADR-0002](adr/0002-pattern-selection.md) |
 | Mediator | В текущей системе отсутствуют сложные взаимодействия между компонентами, требующие отдельного посредника. | [ADR-0002](adr/0002-pattern-selection.md) |
+| Facade | Удалён в AUDIT-02. CheckoutFacade делегировал операции одному CartService и создавал лишний уровень абстракции. | [ADR-0004](adr/0004-pattern-audit.md) |
+
+## Pattern Audit
+
+В версии v0.2 использовалось пять GoF-паттернов.
+
+После проведения Pattern Audit паттерн Facade
+удалён согласно принципу YAGNI.
+
+Текущая реализация содержит четыре GoF-паттерна:
+
+- Factory Method.
+- Strategy.
+- Observer.
+- State.
+
+Repository сохранён как архитектурный паттерн.
+
+На текущем этапе отдельный Structural GoF-паттерн
+в реализации отсутствует.
+
+Функциональность оформления покупки сохранена
+в CartService.
+
+Проверка выполняется с помощью CartCheckoutTest,
+PurchaseTest, AppTest и EndToEndTest.
+
+Подробнее:
+
+- [Pattern Audit](audit.md)
+- [ADR-0004: Pattern Audit](adr/0004-pattern-audit.md)
+- [Pull Request #53](https://github.com/extwel/LinguaHub/pull/53)
