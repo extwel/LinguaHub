@@ -8,6 +8,11 @@ public class ActiveState implements EnrollmentState {
     }
 
     @Override
+    public boolean canContinueLearning() {
+        return true;
+    }
+
+    @Override
     public void complete(Enrollment enrollment) {
         enrollment.setState(new CompletedState());
     }

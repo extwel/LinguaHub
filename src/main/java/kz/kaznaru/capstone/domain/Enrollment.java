@@ -26,6 +26,10 @@ public class Enrollment {
         return state.getName();
     }
 
+    public boolean canContinueLearning() {
+        return state.canContinueLearning();
+    }
+
     public void activate() {
         state.activate(this);
     }

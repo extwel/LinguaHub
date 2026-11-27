@@ -4,6 +4,10 @@ public interface EnrollmentState {
 
     String getName();
 
+    default boolean canContinueLearning() {
+        return false;
+    }
+
     default void activate(Enrollment enrollment) {
         throw new IllegalStateException(
                 "Активация невозможна");
