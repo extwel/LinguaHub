@@ -1,3 +1,4 @@
+
 package kz.kaznaru.capstone.service;
 
 import java.util.List;
@@ -6,11 +7,7 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import kz.kaznaru.capstone.domain.Cart;
-import kz.kaznaru.capstone.domain.Course;
-import kz.kaznaru.capstone.domain.Discount;
-import kz.kaznaru.capstone.domain.DiscountType;
-import kz.kaznaru.capstone.domain.GiftCertificate;
+import kz.kaznaru.capstone.domain.*;
 
 public class CartService {
 
@@ -22,17 +19,30 @@ public class CartService {
 
     private GiftCertificate appliedCertificate;
 
-    // US-08: Купленные курсы
     private final List<Course> purchasedCourses =
             new ArrayList<>();
 
+    // Observer
+    private final Enrollment enrollment =
+            new Enrollment();
+
+    private final EnrollmentNotification notification =
+            new EnrollmentNotification();
+
+    private final EnrollmentLogger logger =
+            new EnrollmentLogger();
+
     public CartService(Cart cart) {
+
         if (cart == null) {
             throw new IllegalArgumentException(
                     "Корзина не может быть пустой");
         }
 
         this.cart = cart;
+
+        enrollment.addObserver(notification);
+        enrollment.addObserver(logger);
 
         certificates.put("GIFT5000",
                 new GiftCertificate("GIFT5000", 5000));
@@ -61,13 +71,12 @@ public class CartService {
         return cart.addCourse(course);
     }
 
-    // US-04
     public boolean removeCourse(long courseId) {
         return cart.removeCourse(courseId);
     }
 
-    // US-05
     public void applyDiscount(Discount discount) {
+
         if (discount == null) {
             throw new IllegalArgumentException(
                     "Скидка не может быть пустой");
@@ -86,24 +95,29 @@ public class CartService {
     }
 
     public double getDiscountAmount() {
+
         if (discount == null) {
             return 0.0;
         }
 
         if (discount.getType() == DiscountType.FIXED) {
-            return Math.min(discount.getValue(),
-                    cart.getTotalPrice());
+            return Math.min(
+                    discount.getValue(),
+                    cart.getTotalPrice()
+            );
         }
 
         return discount.calculateDiscount(cart.getTotalPrice());
     }
 
     public double getDiscountedTotalPrice() {
-        return Math.max(0,
-                cart.getTotalPrice() - getDiscountAmount());
+
+        return Math.max(
+                0,
+                cart.getTotalPrice() - getDiscountAmount()
+        );
     }
 
-    // US-06
     public void applyGiftCertificate(String code) {
 
         if (code == null || code.isBlank()) {
@@ -112,7 +126,8 @@ public class CartService {
         }
 
         GiftCertificate certificate = certificates.get(
-                code.trim().toUpperCase(Locale.ROOT));
+                code.trim().toUpperCase(Locale.ROOT)
+        );
 
         if (certificate == null) {
             throw new IllegalArgumentException(
@@ -144,6 +159,7 @@ public class CartService {
     }
 
     public double getGiftCertificateAmount() {
+
         if (appliedCertificate == null) {
             return 0.0;
         }
@@ -154,25 +170,25 @@ public class CartService {
         );
     }
 
-    // US-07: Итоговая стоимость
     public double getFinalPrice() {
-        return Math.max(0,
+
+        return Math.max(
+                0,
                 getDiscountedTotalPrice()
-                - getGiftCertificateAmount());
+                        - getGiftCertificateAmount()
+        );
     }
 
-    // US-08: Проверка купленного курса
     public boolean isPurchased(long courseId) {
+
         return purchasedCourses.stream()
                 .anyMatch(course -> course.getId() == courseId);
     }
 
-    // US-08: Список купленных курсов
     public List<Course> getPurchasedCourses() {
         return List.copyOf(purchasedCourses);
     }
 
-    // US-08: Покупка курсов
     public double purchaseCourses() {
 
         if (cart.getCourses().isEmpty()) {
@@ -194,6 +210,7 @@ public class CartService {
 
             if (!Double.isFinite(course.getPrice())
                     || course.getPrice() < 0) {
+
                 throw new IllegalArgumentException(
                         "Некорректная стоимость курса");
             }
@@ -209,19 +226,31 @@ public class CartService {
         List<Course> coursesToPurchase =
                 new ArrayList<>(cart.getCourses());
 
-        // Регистрация на курсах
         purchasedCourses.addAll(coursesToPurchase);
 
-        // Очистка корзины
         for (Course course : coursesToPurchase) {
             cart.removeCourse(course.getId());
         }
 
-        // Сброс скидки и применённого сертификата
         discount = null;
         appliedCertificate = null;
 
+        // Observer: уведомление после успешной покупки
+        for (Course course : coursesToPurchase) {
+            enrollment.notifyObservers(course);
+        }
+
         return finalPrice;
+    }
+
+    // Observer: получение уведомлений
+    public List<String> getEnrollmentNotifications() {
+        return notification.getNotifications();
+    }
+
+    // Observer: получение журнала
+    public List<String> getEnrollmentLogs() {
+        return logger.getLogs();
     }
 
     public List<Course> getCourses() {
