@@ -7,11 +7,12 @@ import java.util.List;
 import java.util.Map;
 
 import kz.kaznaru.capstone.domain.Course;
+import kz.kaznaru.capstone.domain.CourseAccess;
 import kz.kaznaru.capstone.domain.CourseProgress;
 import kz.kaznaru.capstone.domain.Lesson;
 import kz.kaznaru.capstone.domain.Enrollment;
 
-public class CourseProgressService {
+public class CourseProgressService implements CourseAccess {
 
     private final Map<Long, CourseProgress> progressMap =
             new HashMap<>();
@@ -22,6 +23,7 @@ public class CourseProgressService {
     public CourseProgressService() {
     }
 
+    @Override
     public CourseProgress openCourse(Course course) {
 
         if (course == null) {
@@ -69,6 +71,7 @@ public class CourseProgressService {
         return enrollment.getStatus();
     }
 
+    @Override
     public boolean completeLesson(long courseId, long lessonId) {
 
         CourseProgress progress = getProgress(courseId);
