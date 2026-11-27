@@ -802,6 +802,7 @@ Repository учитывается отдельно
 - [ADR-0002: Pattern Selection](docs/adr/0002-pattern-selection.md)
 - [ADR-0003: Layered Architecture](docs/adr/0003-template.md)
 - [ADR-0004: Pattern Audit](docs/adr/0004-pattern-audit.md)
+- [ADR-0005: Advanced Patterns and Extensibility](docs/adr/0005-advanced-patterns.md)
 
 ## M2-02 / Main Scenario — Purchase and Learning Lifecycle
 
