@@ -14,6 +14,9 @@ public class CartService {
     private final Cart cart;
     private Discount discount;
 
+    // M3-01: Adapter
+    private final PaymentProcessor paymentProcessor;
+
     private final Map<String, GiftCertificate> certificates =
             new HashMap<>();
 
@@ -34,12 +37,30 @@ public class CartService {
 
     public CartService(Cart cart) {
 
+        this(
+                cart,
+                new PaymentAdapter(
+                        new LegacyPaymentSystem()
+                )
+        );
+    }
+
+    public CartService(
+            Cart cart,
+            PaymentProcessor paymentProcessor) {
+
         if (cart == null) {
             throw new IllegalArgumentException(
                     "Корзина не может быть пустой");
         }
 
+        if (paymentProcessor == null) {
+            throw new IllegalArgumentException(
+                    "Платёжный процессор не может быть null");
+        }
+
         this.cart = cart;
+        this.paymentProcessor = paymentProcessor;
 
         enrollment.addObserver(notification);
         enrollment.addObserver(logger);
@@ -238,6 +259,14 @@ public class CartService {
         if (!Double.isFinite(finalPrice) || finalPrice < 0) {
             throw new IllegalArgumentException(
                     "Некорректная стоимость заказа");
+        }
+
+        // M3-01: оплата через Adapter
+        if (finalPrice > 0
+                && !paymentProcessor.pay(finalPrice)) {
+
+            throw new IllegalArgumentException(
+                    "Оплата отклонена. Покупка не выполнена");
         }
 
         List<Course> coursesToPurchase =
