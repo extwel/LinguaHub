@@ -24,7 +24,6 @@ import kz.kaznaru.capstone.service.CartService;
 import kz.kaznaru.capstone.service.CourseProgressService;
 import kz.kaznaru.capstone.service.CourseService;
 import kz.kaznaru.capstone.service.CertificateService;
-import kz.kaznaru.capstone.service.CheckoutFacade;
 
 import kz.kaznaru.capstone.ui.CourseCatalogConsole;
 
@@ -86,10 +85,6 @@ public class App {
 
         CartService cartService =
                 new CartService(cart);
-
-        // M2-07: Facade
-        CheckoutFacade checkoutFacade =
-                new CheckoutFacade(cartService);
 
         CourseProgressService progressService =
                 new CourseProgressService();
@@ -385,7 +380,7 @@ public class App {
 
                     break;
 
-                // US-07, US-08 и M2-07 Facade
+                // US-07, US-08
                 case "7":
 
                     if (cartService.getCourses().isEmpty()) {
@@ -398,9 +393,9 @@ public class App {
 
                     try {
 
-                        // Facade: получение всех данных заказа
+                        // AUDIT-02: прямая работа с CartService
                         CheckoutSummary summary =
-                                checkoutFacade.prepareCheckout();
+                                cartService.prepareCheckout();
 
                         System.out.println(
                                 "\n======= Подтверждение покупки =======");
@@ -436,8 +431,8 @@ public class App {
 
                         if (confirmation.equals("1")) {
 
-                            // Facade: оформление покупки
-                            double paid = checkoutFacade.checkout();
+                            double paid =
+                                    cartService.purchaseCourses();
 
                             System.out.println(
                                     "Покупка успешно подтверждена!");

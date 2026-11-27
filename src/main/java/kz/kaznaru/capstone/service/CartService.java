@@ -189,6 +189,23 @@ public class CartService {
         return List.copyOf(purchasedCourses);
     }
 
+    // AUDIT-02: подготовка заказа без лишнего Facade
+    public CheckoutSummary prepareCheckout() {
+
+        if (getCourses().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Корзина пуста"
+            );
+        }
+
+        return new CheckoutSummary(
+                getTotalPrice(),
+                getDiscountAmount(),
+                getGiftCertificateAmount(),
+                getFinalPrice()
+        );
+    }
+
     public double purchaseCourses() {
 
         if (cart.getCourses().isEmpty()) {
