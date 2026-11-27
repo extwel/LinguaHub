@@ -7,6 +7,7 @@
 - Team: Ayan, Aniyar
 - Date: 2026-11-27
 - Stage: Checkpoint — Pattern Audit
+- Baseline: v0.2
 
 ## Audit objective
 
@@ -15,7 +16,7 @@
 упрощения проекта согласно принципу YAGNI
 (You Aren't Gonna Need It).
 
-Аудит проводится на основе существующей реализации
+Аудит проведён на основе существующей реализации
 LinguaHub до рефакторинга.
 
 ## Identified code smells
@@ -31,6 +32,12 @@ LinguaHub до рефакторинга.
 
 Все указанные Java-файлы находятся в каталоге
 src/main/java/kz/kaznaru/capstone/.
+
+Исходный код до рефакторинга:
+
+- [CheckoutFacade.java](https://github.com/extwel/LinguaHub/blob/v0.2/src/main/java/kz/kaznaru/capstone/service/CheckoutFacade.java#L36-L37)
+- [CartService.java](https://github.com/extwel/LinguaHub/blob/v0.2/src/main/java/kz/kaznaru/capstone/service/CartService.java)
+- [Discount.java](https://github.com/extwel/LinguaHub/blob/v0.2/src/main/java/kz/kaznaru/capstone/domain/Discount.java)
 
 ## CS-01 — Middle Man
 
@@ -63,30 +70,22 @@ CheckoutFacade является дополнительным посредник�
 платёжные сервисы или сложные подсистемы,
 которые необходимо объединять через Facade.
 
-### Proposed solution
+### Solution
 
-Удалить CheckoutFacade.
+Удалён CheckoutFacade.
 
-Перенести подготовку CheckoutSummary в CartService.
+Подготовка CheckoutSummary перенесена в CartService.
 
-Использовать CartService напрямую из App.
+App использует CartService напрямую.
 
-Сохранить существующую функциональность покупки,
+Сохранена существующая функциональность покупки,
 скидок, подарочных сертификатов и уведомлений.
-
-### Expected result
-
-- Уменьшение количества классов.
-- Удаление лишнего уровня делегирования.
-- Упрощение процесса оформления покупки.
-- Сохранение бизнес-логики в сервисном слое.
 
 ### Decision
 
-Selected for refactoring.
+Fixed.
 
-Facade является основным кандидатом на удаление
-согласно принципу YAGNI.
+Facade удалён согласно принципу YAGNI.
 
 ## CS-02 — Large Class
 
@@ -145,6 +144,9 @@ Deferred.
 
 Необходимо избегать преждевременного усложнения
 архитектуры согласно YAGNI.
+
+Перенос prepareCheckout() в CartService
+не устраняет проблему Large Class.
 
 ## CS-03 — Repeated Conditional
 
@@ -230,29 +232,63 @@ Strategy сохраняется, поскольку разделяет
 | Strategy | Разделение алгоритмов скидок | Keep |
 | Observer | Уведомления и журналирование регистрации | Keep |
 | State | Контроль переходов между состояниями | Keep |
-| Facade | Дополнительное делегирование одному сервису | Remove |
+| Facade | Дополнительное делегирование одному сервису | Removed |
 | Repository | Независимость от реализации хранения данных | Keep |
 
 Repository рассматривается отдельно
 от GoF-паттернов.
 
-## Refactoring plan
+## Refactoring results
 
 Для текущего Checkpoint выбран недостаток
 CS-01 — Middle Man.
 
-План рефакторинга:
+Выполненные изменения:
 
-1. Удалить класс CheckoutFacade.
-2. Перенести подготовку CheckoutSummary в CartService.
-3. Обновить App для прямой работы с CartService.
-4. Адаптировать существующие тесты.
-5. Сохранить все проверяемые сценарии покупки.
-6. Выполнить mvn clean verify.
-7. Проверить результаты JUnit, ArchUnit и JaCoCo.
-8. Оформить изменения отдельным Pull Request.
-9. Создать Audit ADR.
-10. Обновить Pattern Register и README.
+1. Удалён класс CheckoutFacade.
+2. Подготовка CheckoutSummary перенесена в CartService.
+3. App обновлён для прямой работы с CartService.
+4. CheckoutFacadeTest заменён на CartCheckoutTest.
+5. EndToEndTest адаптирован.
+6. Выполнен mvn clean verify.
+7. Изменения оформлены отдельным Pull Request.
+
+### Before refactoring
+
+```java
+CheckoutSummary summary =
+        checkoutFacade.prepareCheckout();
+
+double paid = checkoutFacade.checkout();
+```
+
+### After refactoring
+
+```java
+CheckoutSummary summary =
+        cartService.prepareCheckout();
+
+double paid = cartService.purchaseCourses();
+```
+
+### Pull Request
+
+- PR: #53.
+- Branch: refactor/audit-02-remove-facade.
+- Status: Merged.
+- Merge commit: 36da62746959a79ad3329876f398da51433d05b7.
+
+[View Pull Request](https://github.com/extwel/LinguaHub/pull/53)
+
+### Code changes
+
+| Metric | Result |
+|---|---|
+| Changed files | 5 |
+| Added lines | 45 |
+| Deleted lines | 78 |
+| Net reduction | 33 |
+| Removed production classes | 1 |
 
 ## YAGNI justification
 
@@ -273,19 +309,7 @@ Facade может снова понадобиться при появлении:
 До появления этих требований отдельный Facade
 считается избыточной абстракцией.
 
-## Verification plan
-
-После рефакторинга необходимо подтвердить:
-
-- Все JUnit-тесты проходят.
-- Архитектурные правила ArchUnit соблюдаются.
-- Покрытие JaCoCo соответствует порогу проекта.
-- Покупка курса работает.
-- Скидки рассчитываются корректно.
-- Подарочные сертификаты работают.
-- Корзина очищается после покупки.
-- Observer продолжает отправлять уведомления.
-- Прогресс обучения и сертификаты работают.
+## Verification
 
 Команда проверки:
 
@@ -293,24 +317,59 @@ Facade может снова понадобиться при появлении:
 mvn clean verify
 ```
 
+Результат локальной проверки от 2026-11-27:
+
+```text
+Analyzed bundle 'patterns-capstone' with 34 classes
+All coverage checks have been met.
+BUILD SUCCESS
+Total time: 14.956 s
+```
+
+Проверяемые сценарии:
+
+- Подготовка заказа.
+- Покупка курса.
+- Расчёт скидок.
+- Применение подарочных сертификатов.
+- Очистка корзины после покупки.
+- Уведомления Observer.
+- Отслеживание прогресса.
+- Получение сертификата.
+
+CartCheckoutTest сохраняет проверки
+основных сценариев оформления покупки.
+
+EndToEndTest проверяет полный пользовательский сценарий.
+
 ## Audit status
 
 - Code smells identification: completed.
-- Refactoring: planned.
-- Test verification after refactoring: pending.
-- Audit ADR: pending.
-- Pattern Register update: pending.
+- Refactoring: completed.
+- Test verification after refactoring: completed.
+- Audit ADR: prepared.
+- Pattern Register update: prepared.
+- README update: prepared.
+
+## Related documents
+
+- [Pattern Register](PATTERN_REGISTER.md)
+- [Audit ADR](adr/0004-pattern-audit.md)
+- [README](../README.md)
+- [Release v0.2](https://github.com/extwel/LinguaHub/releases/tag/v0.2)
+- [Refactoring PR #53](https://github.com/extwel/LinguaHub/pull/53)
 
 ## Conclusion
 
 В результате аудита выявлены три недостатка
 исходного кода LinguaHub.
 
-Для непосредственного устранения выбран
-Middle Man в реализации CheckoutFacade.
+Middle Man в реализации CheckoutFacade устранён.
 
 Остальные недостатки задокументированы
 для возможного дальнейшего улучшения проекта.
 
-Предлагаемое упрощение направлено на уменьшение
-сложности архитектуры без потери функциональности.
+Выполненное упрощение уменьшило сложность
+архитектуры без потери проверяемой функциональности.
+
+Сборка Maven и проверка покрытия завершены успешно.
